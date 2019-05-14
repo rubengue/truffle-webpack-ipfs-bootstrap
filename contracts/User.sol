@@ -1,7 +1,8 @@
-pragma solidity ^0.4.19;
+//pragma solidity ^0.4.19;
+pragma solidity >0.4.99 <0.6.0;
 
 contract User {
-    
+
   mapping(address => uint) private addressToIndex;
   mapping(bytes16 => uint) private usernameToIndex;
 
@@ -9,7 +10,7 @@ contract User {
   bytes16[] private usernames;
   bytes[] private ipfsHashes;
 
-  function User() public {
+  constructor() public {
 
     // mappings are virtually initialized to zero values so we need to "waste" the first element of the arrays
     // instead of wasting it we use it to create a user for the contract itself
@@ -19,17 +20,17 @@ contract User {
 
   }
 
-  function hasUser(address userAddress) public view returns(bool hasIndeed) 
+  function hasUser(address userAddress) public view returns(bool hasIndeed)
   {
     return (addressToIndex[userAddress] > 0 || userAddress == addresses[0]);
   }
 
-  function usernameTaken(bytes16 username) public view returns(bool takenIndeed) 
+  function usernameTaken(bytes16 username) public view returns(bool takenIndeed)
   {
     return (usernameToIndex[username] > 0 || username == 'self');
   }
-  
-  function createUser(bytes16 username, bytes ipfsHash) public returns(bool success)
+
+  function createUser(bytes16 username, bytes memory ipfsHash) public returns(bool success)
   {
     require(!hasUser(msg.sender));
     require(!usernameTaken(username));
@@ -40,25 +41,25 @@ contract User {
 
     addressToIndex[msg.sender] = addresses.length - 1;
     usernameToIndex[username] = addresses.length - 1;
-    
+
     return true;
   }
 
-  function updateUser(bytes ipfsHash) public returns(bool success)
+  function updateUser(bytes memory ipfsHash) public returns(bool success)
   {
     require(hasUser(msg.sender));
-    
+
     ipfsHashes[addressToIndex[msg.sender]] = ipfsHash;
     return true;
-  }  
- 
+  }
+
   function getUserCount() public view returns(uint count)
   {
     return addresses.length;
   }
 
   // get by index
-  function getUserByIndex(uint index) public view returns(address userAddress, bytes16 username, bytes ipfsHash) {
+  function getUserByIndex(uint index) public view returns(address userAddress, bytes16 username, bytes memory ipfsHash) {
     require(index < addresses.length);
 
     return(addresses[index], usernames[index], ipfsHashes[index]);
@@ -78,7 +79,7 @@ contract User {
     return usernames[index];
   }
 
-  function getIpfsHashByIndex(uint index) public view returns(bytes ipfsHash)
+  function getIpfsHashByIndex(uint index) public view returns(bytes memory ipfsHash)
   {
     require(index < addresses.length);
 
@@ -86,7 +87,7 @@ contract User {
   }
 
   // get by address
-  function getUserByAddress(address userAddress) public view returns(uint index, bytes16 username, bytes ipfsHash) {
+  function getUserByAddress(address userAddress) public view returns(uint index, bytes16 username, bytes memory ipfsHash) {
     require(index < addresses.length);
 
     return(addressToIndex[userAddress], usernames[addressToIndex[userAddress]], ipfsHashes[addressToIndex[userAddress]]);
@@ -106,7 +107,7 @@ contract User {
     return usernames[addressToIndex[userAddress]];
   }
 
-  function getIpfsHashByAddress(address userAddress) public view returns(bytes ipfsHash)
+  function getIpfsHashByAddress(address userAddress) public view returns(bytes memory ipfsHash)
   {
     require(hasUser(userAddress));
 
@@ -114,7 +115,7 @@ contract User {
   }
 
   // get by username
-  function getUserByUsername(bytes16 username) public view returns(uint index, address userAddress, bytes ipfsHash) {
+  function getUserByUsername(bytes16 username) public view returns(uint index, address userAddress, bytes memory ipfsHash) {
     require(index < addresses.length);
 
     return(usernameToIndex[username], addresses[usernameToIndex[username]], ipfsHashes[usernameToIndex[username]]);
@@ -125,20 +126,20 @@ contract User {
     require(usernameTaken(username));
 
     return usernameToIndex[username];
-  }  
+  }
 
   function getAddressByUsername(bytes16 username) public view returns(address userAddress)
   {
     require(usernameTaken(username));
 
     return addresses[usernameToIndex[username]];
-  }  
+  }
 
-  function getIpfsHashByUsername(bytes16 username) public view returns(bytes ipfsHash)
+  function getIpfsHashByUsername(bytes16 username) public view returns(bytes memory ipfsHash)
   {
     require(usernameTaken(username));
 
     return ipfsHashes[usernameToIndex[username]];
-  }    
+  }
 
 }

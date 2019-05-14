@@ -38,10 +38,11 @@ module.exports = {
         }, {
           loader: 'sass-loader' // compiles Sass to CSS
         }]
-      }          
-    ],
-    loaders: [
-      { test: /\.json$/, use: 'json-loader' },
+      },
+      {
+        test: /\.json$/,
+        use: 'json-loader'
+      },
       {
         test: /\.js$/,
         exclude: /(node_modules|bower_components)/,
@@ -51,8 +52,6 @@ module.exports = {
           plugins: ['transform-runtime']
         }
       }
-    ]
+    ],
   }
 }
-
-

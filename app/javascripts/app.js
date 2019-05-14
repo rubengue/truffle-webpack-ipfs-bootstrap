@@ -29,7 +29,8 @@ window.App = {
 
   // Fetches user with given index from the blockchain
   // see pattern at: https://ethereum.stackexchange.com/questions/26464/how-to-chain-functions-in-truffle-framework
-  // current web3 call to getUserByIndex doesn't work well (it doesn't properly return bytes & bytes16 on same return / decoding it fails)
+  // current web3 call to getUserByIndex doesn't work well
+  // (it doesn't properly return bytes & bytes16 on same return / decoding it fails)
   // so we call for each individual datapoint for now
   getAUser: function(instance, i) {
 
@@ -42,9 +43,9 @@ window.App = {
     return instanceUsed.getUsernameByIndex.call(i).then(function(_username) {
 
       console.log('username:', username = web3.toAscii(_username), i);
-        
+
       $('#' + userCardId).find('.card-title').text(username);
-    
+
       return instanceUsed.getIpfsHashByIndex.call(i);
 
     }).then(function(_ipfsHash) {
@@ -65,11 +66,11 @@ window.App = {
       }
 
       return instanceUsed.getAddressByIndex.call(i);
-    
+
     }).then(function(_address) {
 
       console.log('address:', address = _address, i);
-      
+
       $('#' + userCardId).find('.card-eth-address').text(address);
 
       return true;
@@ -81,7 +82,7 @@ window.App = {
 
     });
 
-  },  
+  },
 
   // Fetch all users from the blockchain - eventually we'll probably need to paginate this
   getUsers: function() {
@@ -123,7 +124,7 @@ window.App = {
               <div class="card-body">
                 <h5 class="card-title"></h5>
                 <h6 class="card-subtitle mb-2"></h6>
-                <p class="card-text"></p>        
+                <p class="card-text"></p>
                 <p class="eth-address m-0 p-0">
                   <span class="card-eth-address"></span>
                 </p>
@@ -153,13 +154,13 @@ window.App = {
     });
 
     web3.eth.getAccounts(function(err, accs) {
-      if (err != null) {
-        alert("There was an error fetching your accounts.");
+      if (err != false ) {
+        alert("There was an error fetching your accounts");
         return;
       }
 
       if (accs.length == 0) {
-        alert("Couldn't get any accounts! Make sure your Ethereum client is configured correctly.");
+        alert("Couldn't get any accounts! Make sure your Ethereum client is configured correctly." + accs);
         return;
       }
 
@@ -181,7 +182,7 @@ window.App = {
       // populate users
       self.getUsers();
 
-    });  
+    });
 
   },
 
@@ -215,28 +216,42 @@ window.App = {
           }
 
           // todo: maybe refresh users here but this could take a while... needs spinner / or message to refresh
-          
+
         }).catch(function(e) {
           // There was an error! Handle it.
           console.log('error creating user:', username, ':', e);
         });
-      
+
       });
     });
-    
+
   }
 
 };
 
 window.addEventListener('load', function() {
   // Checking if Web3 has been injected by the browser (Mist/MetaMask)
-  if (typeof web3 !== 'undefined') {
-    console.warn("Using web3 detected from external source.");
-    // Use Mist/MetaMask's provider
-    window.web3 = new Web3(web3.currentProvider);
-  } else {
-    console.warn("No web3 detected. Please use MetaMask or Mist browser.");
-  }
+    // Modern dapp browsers...
+    if (window.ethereum) {
+      App.web3Provider = window.ethereum;
+      try {
+        // Request account access
+         window.ethereum.enable();
+      } catch (error) {
+        // User denied account access...
+        console.error("User denied account access")
+      }
+    }
+    // Legacy dapp browsers...
+    else if (window.web3) {
+      App.web3Provider = window.web3.currentProvider;
+    }
+    // If no injected web3 instance is detected, fall back to Ganache
+    else {
+      App.web3Provider = new Web3.providers.HttpProvider('http://localhost:7545');
+    }
+    web3 = new Web3(App.web3Provider);
+
 
   App.start();
 
